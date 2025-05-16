@@ -11,7 +11,7 @@ const MapDisplay = ({ routeData }) => {
 
   // --- Example using Google Maps Embed API (Requires an API Key) ---
   // Make sure to URL-encode the destination and origin
-  const apiKey = "YOUR API KEY"; // Replace with your actual API key
+  const apiKey = "AIzaSyDjZD91hFnbf51YH8ksE36h6oOlWT_vH5g"; // Replace with your actual API key
   const origin = routeData.origin
     ? encodeURIComponent(routeData.origin)
     : "current+location"; // Default to current location if no origin
