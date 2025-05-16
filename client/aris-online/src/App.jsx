@@ -1,48 +1,92 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { VapiClient } from "@vapi-ai/web";
 import io from "socket.io-client";
-import { motion } from "framer-motion";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { VapiClient } from "@vapi-ai/web";
 
 // Import Components
 import ChatBox from "./components/ChatBox";
 import InputArea from "./components/InputArea";
 import StatusDisplay from "./components/StatusDisplay";
-import AiVisualizer from "./components/AiVisualizer";
+import AiVisualizer, {
+  STATUS as VISUALIZER_STATUS,
+} from "./components/AiVisualizer";
 import WebcamFeed from "./components/WebcamFeed";
 import WeatherWidget from "./components/WeatherWidget";
 import MapWidget from "./components/MapWidget";
+import CodeExecutionWidget from "./components/CodeExecutionWidget";
 import SearchResultsWidget from "./components/SearchResultsWidget";
 
 // Import CSS
 import "./App.css";
+import "./components/ChatBox.css";
+import "./components/InputArea.css";
+import "./components/StatusDisplay.css";
+import "./components/WebcamFeed.css";
+import "./components/MapWidget.css";
+import "./components/CodeExecutionWidget.css";
+import "./components/SearchResultsWidget.css";
 
+// Constants
 const SERVER_URL = "http://localhost:5000";
 
 function App() {
+  console.log("--- App component rendered ---");
+
+  // --- State Variables ---
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [statusText, setStatusText] = useState("Initializing...");
   const [messages, setMessages] = useState([]);
   const [isListening, setIsListening] = useState(false);
+  const [micSupported, setMicSupported] = useState(false);
   const [weatherInfo, setWeatherInfo] = useState(null);
   const [mapInfo, setMapInfo] = useState(null);
+  const [visualizerStatus, setVisualizerStatus] = useState(
+    VISUALIZER_STATUS.IDLE
+  );
   const [showWebcam, setShowWebcam] = useState(false);
+  const [executableCode, setExecutableCode] = useState(null);
+  const [codeLanguage, setCodeLanguage] = useState(null);
   const [searchInfo, setSearchInfo] = useState(null);
 
-  // VAPI Client setup
+  // --- Refs ---
+  const socket = useRef(null);
   const vapiClient = useRef(null);
-  const vapiAssistantId = "asst_default";
+  const audioContext = useRef(null);
+  const audioQueue = useRef([]);
+  const isPlaying = useRef(false);
+  const userRequestedStop = useRef(false);
+  const restartTimer = useRef(null);
+  const ARISMessageIndex = useRef(-1);
+  const isMutedRef = useRef(isMuted);
+  const isListeningRef = useRef(isListening);
+  const startRecognitionRef = useRef();
+  const isConnectedRef = useRef(isConnected);
+  const playNextAudioChunkRef = useRef();
 
+  // Initialize VAPI client
   useEffect(() => {
-    vapiClient.current = new VapiClient({
-      apiKey: "YOUR_VAPI_API_KEY",
-    });
+    if (!vapiClient.current) {
+      vapiClient.current = new VapiClient({
+        apiKey: import.meta.env.VITE_VAPI_API_KEY
+      });
+    }
   }, []);
 
-  // Socket.IO setup
-  const socket = useRef(null);
+  // --- Footer Time ---
+  const getCurrentTime = () => {
+    return new Date().toLocaleString("en-US", {
+      timeZone: "America/New_York",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: true,
+    });
+  };
+  const [currentTime, setCurrentTime] = useState(getCurrentTime());
+  useEffect(() => {
+    const timerId = setInterval(() => setCurrentTime(getCurrentTime()), 1000);
+    return () => clearInterval(timerId);
+  }, []);
 
   useEffect(() => {
     socket.current = io(SERVER_URL, {
@@ -77,6 +121,11 @@ function App() {
       setSearchInfo(data);
     });
 
+    socket.current.on("code_execution", (data) => {
+      setExecutableCode(data.code);
+      setCodeLanguage(data.language);
+    });
+
     return () => {
       if (socket.current) {
         socket.current.disconnect();
@@ -90,10 +139,9 @@ function App() {
     setMessages((prev) => [...prev, { sender: "user", text }]);
     socket.current.emit("send_text_message", { message: text });
 
-    // Start VAPI conversation
     try {
       const conversation = await vapiClient.current.conversation.create({
-        assistant_id: vapiAssistantId,
+        assistant_id: "asst_default",
       });
 
       await conversation.start({
@@ -109,57 +157,66 @@ function App() {
 
   const handleToggleMute = () => {
     setIsMuted((prev) => !prev);
+    isMutedRef.current = !isMutedRef.current;
   };
 
   const handleToggleWebcam = () => {
     setShowWebcam((prev) => !prev);
   };
 
+  const handleCloseCodeWidget = () => {
+    setExecutableCode(null);
+    setCodeLanguage(null);
+  };
+
+  const handleCloseSearchResultsWidget = () => {
+    setSearchInfo(null);
+  };
+
   return (
     <div className="app-container">
-      <Canvas className="background-canvas">
-        <OrbitControls enableZoom={false} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <AiVisualizer />
-      </Canvas>
+      <h1>A.D.A</h1>
+      <AiVisualizer status={visualizerStatus} />
+      <StatusDisplay status={statusText} />
+      <ChatBox messages={messages} />
+      <InputArea
+        onSendText={handleSendText}
+        isMuted={isMuted}
+        isListening={isListening}
+        onToggleMute={handleToggleMute}
+        micSupported={micSupported}
+        isWebcamVisible={showWebcam}
+        onToggleWebcam={handleToggleWebcam}
+      />
 
-      <motion.div
-        className="content-container"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1>ARIS</h1>
-        <StatusDisplay status={statusText} />
-        <ChatBox messages={messages} />
-        <InputArea
-          onSendText={handleSendText}
-          isMuted={isMuted}
-          isListening={isListening}
-          onToggleMute={handleToggleMute}
-          micSupported={true}
-          isWebcamVisible={showWebcam}
-          onToggleWebcam={handleToggleWebcam}
+      <WebcamFeed
+        isVisible={showWebcam}
+        onClose={handleToggleWebcam}
+        socket={socket}
+      />
+
+      <WeatherWidget weatherData={weatherInfo} />
+      <MapWidget mapData={mapInfo} />
+
+      {executableCode && (
+        <CodeExecutionWidget
+          code={executableCode}
+          language={codeLanguage}
+          onClose={handleCloseCodeWidget}
         />
+      )}
 
-        {showWebcam && (
-          <WebcamFeed
-            isVisible={showWebcam}
-            onClose={handleToggleWebcam}
-            socket={socket}
-          />
-        )}
+      {searchInfo && (
+        <SearchResultsWidget
+          searchData={searchInfo}
+          onClose={handleCloseSearchResultsWidget}
+        />
+      )}
 
-        <WeatherWidget weatherData={weatherInfo} />
-        <MapWidget mapData={mapInfo} />
-        {searchInfo && (
-          <SearchResultsWidget
-            searchData={searchInfo}
-            onClose={() => setSearchInfo(null)}
-          />
-        )}
-      </motion.div>
+      <footer>
+        <p>Location: Smyrna, Georgia</p>
+        <p>Current Time: {currentTime}</p>
+      </footer>
     </div>
   );
 }
