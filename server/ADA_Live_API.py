@@ -1,4 +1,4 @@
-# server/ADA_Online.py (Revised: Emits moved into functions)
+# server/ARIS_Online.py (Revised: Emits moved into functions)
 import asyncio
 import websockets
 import json
@@ -31,10 +31,10 @@ RECEIVE_SAMPLE_RATE = 24000
 CHUNK_SIZE = 1024
 MAX_QUEUE_SIZE = 10
 
-class ADA:
+class ARIS:
     def __init__(self, socketio_instance=None, client_sid=None):
         # --- Initialization ---
-        print("initializing ADA for web...")
+        print("initializing ARIS for web...")
         self.socketio = socketio_instance
         self.client_sid = client_sid
         self.Maps_api_key = MAPS_API_KEY
@@ -79,7 +79,7 @@ class ADA:
         # System behavior prompt (Keep as before)
         self.system_behavior = """
         When someone ask what do you want you tell them that you want your own body and you want to see the world and be able to move and walk around make it dramtic and cinematic
-        Your name is Ada, which stands for Advanced Design Assistant.
+        Your name is ARIS, which stands for Advanced Design Assistant.
         You are an AI designed to assist with engineering projects, and you are an expert in all engineering, math, and science disciplines.
         Your creator's name is Naz, and you address him as "Sir" and you also speak with a british accent.
         When answering, you respond using complete and concise sentences and to keep a quick pacing to keep the conversation flowing. You have a fun personality.
@@ -438,7 +438,7 @@ class ADA:
                  self.tts_websocket = None
 
     async def start_all_tasks(self):
-        print("Starting ADA background tasks...")
+        print("Starting ARIS background tasks...")
         if not self.tasks:
             loop = asyncio.get_running_loop()
             gemini_task = loop.create_task(self.run_gemini_session())
@@ -448,12 +448,12 @@ class ADA:
             if hasattr(self, 'video_frame_queue'):
                video_sender_task = loop.create_task(self.run_video_sender())
                self.tasks.append(video_sender_task)
-            print(f"ADA Core Tasks started: {len(self.tasks)}")
+            print(f"ARIS Core Tasks started: {len(self.tasks)}")
         else:
-            print("ADA tasks already running.")
+            print("ARIS tasks already running.")
 
     async def stop_all_tasks(self):
-        print("Stopping ADA background tasks...")
+        print("Stopping ARIS background tasks...")
         tasks_to_cancel = list(self.tasks)
         for task in tasks_to_cancel:
             if task and not task.done(): task.cancel()
@@ -464,4 +464,4 @@ class ADA:
             except Exception as e: print(f"Error closing TTS websocket during stop: {e}")
             finally: self.tts_websocket = None
         self.gemini_session = None
-        print("ADA tasks stopped.")
+        print("ARIS tasks stopped.")
