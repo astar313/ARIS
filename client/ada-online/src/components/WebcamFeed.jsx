@@ -18,7 +18,7 @@ function WebcamFeed({ isVisible, onClose, socket }) {
       !videoRef.current ||
       !canvasRef.current ||
       !socket?.current || // Check if socket ref and current exist
-      videoRef.current.readyState < videoRef.current.HAVE_METADATA // Ensure video is ready
+      videoRef.current.readyState < videoRef.current.HAVE_METARISTA // Ensure video is ready
     ) {
       // console.log("Video or canvas not ready, or socket unavailable.");
       return;
@@ -90,8 +90,8 @@ function WebcamFeed({ isVisible, onClose, socket }) {
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          // Wait for video metadata to load before playing and starting interval
-          videoRef.current.onloadedmetadata = async () => {
+          // Wait for video metARISta to load before playing and starting interval
+          videoRef.current.onloadedmetARISta = async () => {
             try {
               await videoRef.current.play();
               console.log("Webcam stream started and playing.");
