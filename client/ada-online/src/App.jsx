@@ -59,7 +59,7 @@ function App() {
   const isPlaying = useRef(false);
   const userRequestedStop = useRef(false);
   const restartTimer = useRef(null);
-  const adaMessageIndex = useRef(-1);
+  const ARISMessageIndex = useRef(-1);
   const isMutedRef = useRef(isMuted);
   const isListeningRef = useRef(isListening);
   const startRecognitionRef = useRef();
@@ -157,7 +157,7 @@ function App() {
 
     isPlaying.current = true;
     setVisualizerStatus(VISUALIZER_STATUS.SPEAKING);
-    setStatusText("Ada is speaking...");
+    setStatusText("ARIS is speaking...");
     const base64Chunk = audioQueue.current.shift();
 
     try {
@@ -370,7 +370,7 @@ function App() {
       );
       clearTimeout(restartTimer.current); // Stop any pending restarts
       setIsListening(false); // Update listening state
-      // Set visualizer to idle only if Ada isn't speaking
+      // Set visualizer to idle only if ARIS isn't speaking
       if (!isPlaying.current) {
         setVisualizerStatus(VISUALIZER_STATUS.IDLE);
       }
@@ -395,7 +395,7 @@ function App() {
     const handleEnd = () => {
       console.log("DEBUG: recognition.onend fired.");
       setIsListening(false); // No longer listening
-      // Set visualizer to idle only if Ada isn't speaking
+      // Set visualizer to idle only if ARIS isn't speaking
       if (!isPlaying.current) {
         setVisualizerStatus(VISUALIZER_STATUS.IDLE);
       }
@@ -417,13 +417,13 @@ function App() {
           ...prev,
           { sender: "user", text: processedTranscript },
         ]);
-        adaMessageIndex.current = -1; // Reset index for next Ada message
+        ARISMessageIndex.current = -1; // Reset index for next ARIS message
         if (socket.current?.connected) {
           socket.current.emit("send_transcribed_text", {
             transcript: processedTranscript,
           });
         }
-        setStatusText("Waiting for Ada..."); // Update status
+        setStatusText("Waiting for ARIS..."); // Update status
       } else {
         // Update status if no transcript sent (e.g., muted, stopped, empty)
         if (isMutedRef.current) setStatusText("Muted.");
@@ -555,28 +555,28 @@ function App() {
       setVisualizerStatus(VISUALIZER_STATUS.IDLE); // Reset visualizer
     };
 
-    // Handles incoming text chunks for Ada's response
+    // Handles incoming text chunks for ARIS's response
     const handleTextChunk = (data) => {
       if (!data || !data.text) return; // Ignore empty chunks
       setMessages((prevMessages) => {
         const newMessages = [...prevMessages];
-        // Check if the last message is from Ada and append, or add new message
+        // Check if the last message is from ARIS and append, or add new message
         if (
-          adaMessageIndex.current !== -1 && // Ensure index is valid
-          adaMessageIndex.current < newMessages.length && // Bounds check
-          newMessages[adaMessageIndex.current]?.sender === "ada"
+          ARISMessageIndex.current !== -1 && // Ensure index is valid
+          ARISMessageIndex.current < newMessages.length && // Bounds check
+          newMessages[ARISMessageIndex.current]?.sender === "ARIS"
         ) {
-          newMessages[adaMessageIndex.current].text += data.text;
+          newMessages[ARISMessageIndex.current].text += data.text;
         } else {
-          // Add a new message entry for Ada
-          newMessages.push({ sender: "ada", text: data.text });
-          adaMessageIndex.current = newMessages.length - 1; // Update index
+          // Add a new message entry for ARIS
+          newMessages.push({ sender: "ARIS", text: data.text });
+          ARISMessageIndex.current = newMessages.length - 1; // Update index
         }
         return newMessages;
       });
     };
 
-    // Handles incoming audio chunks for Ada's speech
+    // Handles incoming audio chunks for ARIS's speech
     const handleAudioChunk = (data) => {
       if (!data || !data.audio) return; // Ignore empty chunks
       if (audioContext.current) {
@@ -785,11 +785,11 @@ function App() {
 
         // Update messages UI
         setMessages((prev) => [...prev, { sender: "user", text: text }]);
-        adaMessageIndex.current = -1; // Reset Ada message index
+        ARISMessageIndex.current = -1; // Reset ARIS message index
 
         // Emit text message to backend
         socket.current.emit("send_text_message", { message: text });
-        setStatusText("Waiting for Ada..."); // Update status
+        setStatusText("Waiting for ARIS..."); // Update status
 
         // Restart recognition if it was listening before and isn't muted now
         clearTimeout(restartTimer.current); // Clear previous restart timer
