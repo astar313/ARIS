@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
-import { Vapi } from "@vapi-ai/web";
+import { createVapiClient } from "@vapi-ai/web";
 import ChatBox from "./components/ChatBox";
 import InputArea from "./components/InputArea";
 import StatusDisplay from "./components/StatusDisplay";
@@ -19,7 +19,7 @@ import "./components/MapWidget.css";
 import "./components/CodeExecutionWidget.css";
 import "./components/SearchResultsWidget.css";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
+const SERVER_URL = "http://localhost:5000";
 
 function App() {
   // State variables
@@ -54,7 +54,7 @@ function App() {
   useEffect(() => {
     const initializeVapi = async () => {
       try {
-        vapi.current = new Vapi({
+        vapi.current = createVapiClient({
           apiKey: import.meta.env.VITE_VAPI_API_KEY,
           baseUrl: "https://api.vapi.ai",
         });
