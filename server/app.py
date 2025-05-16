@@ -197,7 +197,7 @@ def handle_video_feed_stopped():
 if __name__ == '__main__':
     print("Starting Flask-SocketIO server...")
     try:
-        socketio.run(app, debug=True, host='0.0.0.0', port=5000, use_reloader=False)
+        socketio.run(app, debug=True, host='0.0.0.0', port=5173, use_reloader=False)
     finally:
         print("\nServer shutting down...")
         if ARIS_instance:
