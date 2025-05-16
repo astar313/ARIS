@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
-import { createVapiClient } from "@vapi-ai/web";
 import ChatBox from "./components/ChatBox";
 import InputArea from "./components/InputArea";
 import StatusDisplay from "./components/StatusDisplay";
@@ -39,7 +38,6 @@ function App() {
 
   // Refs
   const socket = useRef(null);
-  const vapi = useRef(null);
   const audioContext = useRef(null);
   const audioQueue = useRef([]);
   const isPlaying = useRef(false);
@@ -50,65 +48,29 @@ function App() {
   const isListeningRef = useRef(isListening);
   const isConnectedRef = useRef(isConnected);
 
-  // Initialize VAPI client
+  // Initialize AudioContext
   useEffect(() => {
-    const initializeVapi = async () => {
-      try {
-        vapi.current = createVapiClient({
-          apiKey: import.meta.env.VITE_VAPI_API_KEY,
-          baseUrl: "https://api.vapi.ai",
-        });
-
-        // Set up event listeners
-        vapi.current.on("call-start", () => {
-          console.log("Call started");
-          setVisualizerStatus(VISUALIZER_STATUS.LISTENING);
-          setIsListening(true);
-        });
-
-        vapi.current.on("call-end", () => {
-          console.log("Call ended");
-          setVisualizerStatus(VISUALIZER_STATUS.IDLE);
-          setIsListening(false);
-        });
-
-        vapi.current.on("speech-start", () => {
-          console.log("Speech started");
-          setVisualizerStatus(VISUALIZER_STATUS.SPEAKING);
-        });
-
-        vapi.current.on("speech-end", () => {
-          console.log("Speech ended");
-          setVisualizerStatus(VISUALIZER_STATUS.PROCESSING);
-        });
-
-        vapi.current.on("message", (message) => {
-          console.log("Message received:", message);
-          setMessages(prev => [...prev, { sender: "ARIS", text: message.content }]);
-          if (socket.current?.connected) {
-            socket.current.emit("send_text_message", { message: message.content });
-          }
-        });
-
-        vapi.current.on("error", (error) => {
-          console.error("VAPI Error:", error);
-          setStatusText("Voice assistant error");
-        });
-
-        console.log("VAPI client initialized successfully");
-      } catch (error) {
-        console.error("Failed to initialize VAPI client:", error);
-        setStatusText("Error initializing voice assistant");
+    const initAudioContext = () => {
+      if (!audioContext.current) {
+        audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
       }
     };
 
-    if (!vapi.current) {
-      initializeVapi();
-    }
+    const handleInteraction = () => {
+      initAudioContext();
+      if (audioContext.current?.state === 'suspended') {
+        audioContext.current.resume();
+      }
+    };
+
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
 
     return () => {
-      if (vapi.current) {
-        vapi.current.disconnect();
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+      if (audioContext.current) {
+        audioContext.current.close();
       }
     };
   }, []);
@@ -131,10 +93,29 @@ function App() {
       isConnectedRef.current = false;
       setStatusText("Disconnected.");
       setIsListening(false);
+      setVisualizerStatus(VISUALIZER_STATUS.IDLE);
     });
 
     socket.current.on("receive_text_chunk", (data) => {
       setMessages(prev => [...prev, { sender: "ARIS", text: data.text }]);
+    });
+
+    socket.current.on("receive_audio_chunk", async (data) => {
+      if (!audioContext.current) return;
+
+      const audioData = base64ToFloat32Array(data.audio);
+      const audioBuffer = audioContext.current.createBuffer(1, audioData.length, 24000);
+      audioBuffer.getChannelData(0).set(audioData);
+
+      const source = audioContext.current.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.current.destination);
+      source.start();
+      setVisualizerStatus(VISUALIZER_STATUS.SPEAKING);
+
+      source.onended = () => {
+        setVisualizerStatus(VISUALIZER_STATUS.IDLE);
+      };
     });
 
     socket.current.on("weather_update", (data) => {
@@ -183,25 +164,28 @@ function App() {
     });
   }
 
-  const handleSendText = async (text) => {
+  function base64ToFloat32Array(base64) {
+    const binaryString = window.atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const int16Array = new Int16Array(bytes.buffer);
+    const float32Array = new Float32Array(int16Array.length);
+    for (let i = 0; i < int16Array.length; i++) {
+      float32Array[i] = int16Array[i] / 32768.0;
+    }
+    return float32Array;
+  }
+
+  const handleSendText = (text) => {
     if (!text) return;
 
     setMessages(prev => [...prev, { sender: "user", text }]);
     
     if (socket.current?.connected) {
       socket.current.emit("send_text_message", { message: text });
-    }
-
-    try {
-      if (vapi.current) {
-        await vapi.current.start({
-          assistantId: "asst_default",
-          userMessage: text,
-        });
-      }
-    } catch (error) {
-      console.error("VAPI Error:", error);
-      setStatusText("Voice assistant error");
+      setVisualizerStatus(VISUALIZER_STATUS.PROCESSING);
     }
   };
 
