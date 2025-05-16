@@ -1,35 +1,28 @@
 import React from 'react';
-import styles from './Visualizer.module.css'; // We'll create this CSS file next
+import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
+import { Sphere, MeshDistortMaterial } from '@react-three/drei';
 
-// Define the possible statuses using constants or TypeScript enum if preferred
-export const STATUS = {
-  IDLE: 'idle',
-  LISTENING: 'listening',
-  SPEAKING: 'speaking',
-};
+function AiVisualizer() {
+  const sphereRef = useRef();
 
-const AiVisualizer = ({ status = STATUS.IDLE }) => {
-  // Determine the CSS class based on the status prop
-  const getStatusClass = () => {
-    switch (status) {
-      case STATUS.LISTENING:
-        return styles.listening;
-      case STATUS.SPEAKING:
-        return styles.speaking;
-      case STATUS.IDLE:
-      default:
-        return styles.idle;
-    }
-  };
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    sphereRef.current.distort = Math.sin(t) * 0.3 + 0.5;
+  });
 
   return (
-    <div className={styles.orbContainer}>
-      <div className={`${styles.orb} ${getStatusClass()}`}>
-        {/* Optional: Inner elements for more complex animations */}
-        <div className={styles.orbCore}></div>
-      </div>
-    </div>
+    <Sphere ref={sphereRef} args={[2, 64, 64]}>
+      <MeshDistortMaterial
+        color="#00a8ff"
+        attach="material"
+        distort={0.5}
+        speed={5}
+        roughness={0}
+        metalness={0.8}
+      />
+    </Sphere>
   );
-};
+}
 
 export default AiVisualizer;

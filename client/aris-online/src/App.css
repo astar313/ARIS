@@ -1,65 +1,52 @@
 /* src/App.css */
-
 .app-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+}
+
+.background-canvas {
+  position: fixed !important;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 700px; /* Slightly narrower */
-  /* Use theme variables */
-  background-color: var(--card-background-light); /* Default light */
-  border-radius: 12px; /* Slightly larger radius */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); /* Softer shadow */
-  padding: 25px 30px; /* Adjust padding */
+  height: 100%;
+  z-index: 0;
+}
+
+.content-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  margin: 20px;
-  min-height: calc(100vh - 80px); /* Ensure it takes significant height */
-  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
 }
 
-/* Apply dark mode styles */
-@media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) .app-container {
-    background-color: var(--card-background-dark);
-  }
-}
-body[data-theme="dark"] .app-container {
-  background-color: var(--card-background-dark);
-}
-
-.app-container h1 {
+h1 {
+  font-size: 4rem;
   text-align: center;
-  color: var(--text-light); /* Use variable */
-  margin-bottom: 15px; /* Adjust spacing */
-  font-weight: 1000;
-  font-size: 5rem; /* Add this line - Adjust the value as needed */
-}
-@media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) .app-container h1 {
-    color: var(--text-dark);
-  }
-}
-body[data-theme="dark"] .app-container h1 {
-  color: var(--text-dark);
+  color: #00a8ff;
+  margin-bottom: 2rem;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 168, 255, 0.5);
 }
 
-/* Remove chat-wrapper if not needed, structure is in App.jsx */
-/* .chat-wrapper { ... } */
-
-footer {
-  margin-top: auto; /* Push footer to bottom */
-  padding-top: 15px;
-  border-top: 1px solid #eee; /* Keep separator or remove */
-  font-size: 0.85em;
-  color: var(--muted-text-light); /* Use variable */
-  text-align: center;
-  opacity: 0.8;
-}
-@media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) footer {
-    border-top-color: #333;
-    color: var(--muted-text-dark);
+/* Responsive Design */
+@media (max-width: 768px) {
+  .content-container {
+    padding: 1rem;
   }
-}
-body[data-theme="dark"] footer {
-  border-top-color: #333;
-  color: var(--muted-text-dark);
+
+  h1 {
+    font-size: 3rem;
+  }
 }
