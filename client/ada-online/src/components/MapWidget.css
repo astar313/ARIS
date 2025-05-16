@@ -16,7 +16,7 @@
   display: flex; /* Use flexbox for layout */
   flex-direction: column; /* Stack title and map vertically */
 
-  /* --- Theme Styles (Adapt from WeatherWidget.css) --- */
+  /* --- Theme Styles (ARISpt from WeatherWidget.css) --- */
   background-color: var(--card-background-light, #ffffff);
   color: var(--text-light, #212529);
   border-color: var(--muted-text-light, #ccc);
@@ -27,7 +27,7 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Dark Theme Styles (Adapt from WeatherWidget.css) */
+/* Dark Theme Styles (ARISpt from WeatherWidget.css) */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) .map-widget {
     background-color: var(--card-background-dark, #2c3034);
@@ -64,7 +64,7 @@ body[data-theme="dark"] .map-widget {
 .map-widget-close-button:hover {
   background: rgba(0, 0, 0, 0.4);
 }
-/* Dark theme adjustments (Adapt from WeatherWidget.css) */
+/* Dark theme adjustments (ARISpt from WeatherWidget.css) */
 @media (prefers-color-scheme: dark) {
   body:not([data-theme="light"]) .map-widget-close-button {
     background: rgba(255, 255, 255, 0.2);
