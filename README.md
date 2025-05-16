@@ -1,16 +1,16 @@
-# ADA - Advanced Design Assistant Application
+# ARIS - Advanced Design Assistant Application
 
 ## Overview
 
-This application is a conversational AI assistant named Ada, built with a Python backend (Flask, SocketIO, Google Gemini) and a React frontend. It supports text input, client-side speech-to-text (Web Speech API), text-to-speech (ElevenLabs), webcam video frame processing, and integrates with external APIs for weather (python_weather), maps/directions (googlemaps), and web search (googlesearch-python, aiohttp, BeautifulSoup). Communication between the frontend and backend happens in real-time using WebSockets (SocketIO).
+This application is a conversational AI assistant named ARIS, built with a Python backend (Flask, SocketIO, Google Gemini) and a React frontend. It supports text input, client-side speech-to-text (Web Speech API), text-to-speech (ElevenLabs), webcam video frame processing, and integrates with external APIs for weather (python_weather), maps/directions (googlemaps), and web search (googlesearch-python, aiohttp, BeautifulSoup). Communication between the frontend and backend happens in real-time using WebSockets (SocketIO).
 
 ## How it Works
 
-1.  **Backend (`backend/app.py`, `backend/ADA_Online.py`):**
+1.  **Backend (`backend/app.py`, `backend/ARIS_Online.py`):**
 
     - A Flask server manages HTTP requests and SocketIO connections.
     - SocketIO handles real-time bidirectional communication with the React frontend.
-    - An `ADA` class instance (`ADA_Online.py`) encapsulates the core assistant logic.
+    - An `ARIS` class instance (`ARIS_Online.py`) encapsulates the core assistant logic.
     - It uses `asyncio` within a separate thread to manage asynchronous tasks like interacting with the Gemini API, handling TTS streams, and processing inputs without blocking the Flask server.
     - It connects to the Google Gemini API (`google-generativeai`) for conversational AI capabilities, configured with specific system instructions and tool functions (weather, travel duration, search).
     - It receives text input, transcribed speech, and video frames from the client via SocketIO.
@@ -35,7 +35,7 @@ This application is a conversational AI assistant named Ada, built with a Python
       - Text chunks received via `receive_text_chunk` are assembled and displayed in the chatbox.
       - Base64 encoded audio chunks received via `receive_audio_chunk` are queued and played back using the Web Audio API (`AudioContext`).
       - Data received via `weather_update`, `map_update`, `executable_code_received`, and `search_results_update` updates the state, causing the respective widgets to render or update.
-    - The `AiVisualizer` component changes appearance based on Ada's status (idle, listening, speaking).
+    - The `AiVisualizer` component changes appearance based on ARIS's status (idle, listening, speaking).
     - The `WebcamFeed` component handles accessing the user's camera, displaying the feed (mirrored), and capturing frames.
     - Other widgets (`Weather`, `Map`, `Code`, `Search`) are displayed conditionally when relevant data is received from the backend.
 
