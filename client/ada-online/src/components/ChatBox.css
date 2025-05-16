@@ -66,8 +66,8 @@ body[data-theme="dark"] .user-message {
 }
 /* --- END User Message Theme Styles --- */
 
-/* --- ADA Message Theme Styles --- */
-.ada-message {
+/* --- ARIS Message Theme Styles --- */
+.ARIS-message {
   /* Default (Light) */
   background-color: #e9ecef; /* Keep light grey or use a light card variable */
   color: var(--text-light, #212529); /* Use variable */
@@ -75,7 +75,7 @@ body[data-theme="dark"] .user-message {
   border-bottom-left-radius: 6px;
 }
 @media (prefers-color-scheme: dark) {
-  body:not([data-theme="light"]) .ada-message {
+  body:not([data-theme="light"]) .ARIS-message {
     background-color: var(
       --card-background-dark,
       #343a40
@@ -83,11 +83,11 @@ body[data-theme="dark"] .user-message {
     color: var(--text-dark, #e9ecef); /* Use light text */
   }
 }
-body[data-theme="dark"] .ada-message {
+body[data-theme="dark"] .ARIS-message {
   background-color: var(--card-background-dark, #343a40);
   color: var(--text-dark, #e9ecef);
 }
-/* --- END ADA Message Theme Styles --- */
+/* --- END ARIS Message Theme Styles --- */
 
 .message span {
   display: block;
