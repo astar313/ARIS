@@ -37,7 +37,7 @@ function ChatBox({ messages }) {
 
 ChatBox.propTypes = {
     messages: PropTypes.arrayOf(PropTypes.shape({
-        sender: PropTypes.oneOf(['user', 'ada']).isRequired,
+        sender: PropTypes.oneOf(['user', 'ARIS']).isRequired,
         text: PropTypes.string.isRequired,
     })).isRequired,
 };
