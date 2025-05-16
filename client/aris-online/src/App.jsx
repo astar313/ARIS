@@ -18,7 +18,8 @@ import "./components/MapWidget.css";
 import "./components/CodeExecutionWidget.css";
 import "./components/SearchResultsWidget.css";
 
-const SERVER_URL = "http://localhost:5000";
+// Get the server URL from environment variables
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 function App() {
   // State variables
@@ -80,6 +81,8 @@ function App() {
     socket.current = io(SERVER_URL, {
       reconnectionAttempts: 5,
       transports: ["websocket"],
+      path: "/socket.io",
+      withCredentials: true
     });
 
     socket.current.on("connect", () => {

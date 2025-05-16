@@ -12,14 +12,11 @@ from ARIS_Online import ARIS # Make sure filename matches ARIS_Online.py
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'a_default_fallback_secret_key!')
 
-REACT_APP_PORT = os.getenv('REACT_APP_PORT', '5173')
-REACT_APP_ORIGIN = f"http://localhost:{REACT_APP_PORT}"
-REACT_APP_ORIGIN_IP = f"http://127.0.0.1:{REACT_APP_PORT}"
-
+# Update CORS configuration to handle WebContainer URLs
 socketio = SocketIO(
     app,
     async_mode='threading',
-    cors_allowed_origins=[REACT_APP_ORIGIN, REACT_APP_ORIGIN_IP]
+    cors_allowed_origins="*"  # Allow all origins in development
 )
 
 ARIS_instance = None
@@ -169,7 +166,6 @@ def handle_transcribed_text(data):
          print(f"    ARIS instance not ready or SID mismatch for transcript from {client_sid}.")
 
 
-# **** ADD VIDEO FRAME HANDLER ****
 @socketio.on('send_video_frame')
 def handle_video_frame(data):
     """ Receives base64 video frame data from client """
