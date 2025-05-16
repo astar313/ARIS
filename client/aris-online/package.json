@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^9.99.5",
+    "@react-three/fiber": "^8.15.16",
     "@vapi-ai/web": "^1.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-youtube": "^10.1.0",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "three": "^0.161.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
